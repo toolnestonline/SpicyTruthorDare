@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spicy Truth or Dare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600&display=swap');
+        
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #ff8e8e;
+            --accent: #ff4757;
+            --dark: #2f3542;
+            --light: #f1f2f6;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffeef1 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Dancing Script', cursive;
+        }
+        
+        .card {
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .btn-spicy {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            transition: all 0.3s ease;
+        }
+        
+        .btn-spicy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(255, 71, 87, 0.4);
+        }
+        
+        .floating-hearts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .heart {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            opacity: 0;
+            transform: rotate(45deg);
+            animation: animate 25s linear infinite;
+        }
+        
+        .heart:before, .heart:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: 50%;
+        }
+        
+        .heart:before {
+            top: -50%;
+            left: 0;
+        }
+        
+        .heart:after {
+            top: 0;
+            left: -50%;
+        }
+        
+        @keyframes animate {
+            0% {
+                transform: rotate(45deg) translateY(-200px) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: rotate(45deg) translateY(-1000px) scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+    <div class="floating-hearts" id="hearts-container"></div>
+    
+    <div class="max-w-md w-full">
+        <h1 class="text-5xl font-bold text-center mb-2 title-font text-pink-600">Spicy Truth or Dare</h1>
+        <p class="text-center text-gray-600 mb-8">Turn up the heat in your relationship</p>
+        
+        <div class="bg-white rounded-xl p-6 mb-8 shadow-lg">
+            <div class="flex justify-center space-x-4 mb-6">
+                <button id="truth-btn" class="btn-spicy text-white px-6 py-3 rounded-full font-semibold">
+                    <i class="fas fa-comment-dots mr-2"></i> Truth
+                </button>
+                <button id="dare-btn" class="btn-spicy text-white px-6 py-3 rounded-full font-semibold">
+                    <i class="fas fa-fire-alt mr-2"></i> Dare
+                </button>
+            </div>
+            
+            <div class="relative h-64 mb-6">
+                <div id="card" class="card w-full h-full bg-gradient-to-br from-pink-50 to-red-50 rounded-xl p-6 flex flex-col justify-center items-center relative">
+                    <div class="card-front absolute inset-0 flex flex-col justify-center items-center p-6">
+                        <i class="fas fa-heart text-4xl text-pink-400 mb-4"></i>
+                        <p class="text-xl text-center text-gray-700">Choose Truth or Dare to begin</p>
+                    </div>
+                    <div class="card-back absolute inset-0 flex flex-col justify-center items-center p-6">
+                        <p id="prompt-text" class="text-xl font-medium text-center text-gray-800"></p>
+                        <div id="category-badge" class="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button id="skip-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-full font-medium transition">
+                    <i class="fas fa-forward mr-2"></i> Skip
+                </button>
+                <button id="custom-btn" class="bg-purple-100 hover:bg-purple-200 text-purple-800 px-6 py-2 rounded-full font-medium transition">
+                    <i class="fas fa-plus-circle mr-2"></i> Custom Dare
+                </button>
+            </div>
+        </div>
+        
+        <div class="text-center text-sm text-gray-500">
+            <p>Made with <i class="fas fa-heart text-red-500"></i> for couples</p>
+        </div>
+    </div>
+    
+    <!-- Custom Dare Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+            <h3 class="text-xl font-bold mb-4 text-pink-600">Add Your Own Dare</h3>
+            <textarea id="custom-dare-input" class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-pink-500 focus:border-transparent" rows="4" placeholder="Enter your spicy dare..."></textarea>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-custom" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-medium">Cancel</button>
+                <button id="save-custom" class="px-4 py-2 rounded-lg bg-pink-500 text-white font-medium">Save Dare</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Floating hearts animation
+        function createHearts() {
+            const container = document.getElementById('hearts-container');
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('span');
+                heart.classList.add('heart');
+                
+                const size = Math.random() * 20 + 10;
+                const posX = Math.random() * window.innerWidth;
+                const delay = Math.random() * 15;
+                const duration = Math.random() * 15 + 10;
+                const color = `hsl(${Math.random() * 60 + 330}, 100%, 70%)`;
+                
+                heart.style.width = `${size}px`;
+                heart.style.height = `${size}px`;
+                heart.style.left = `${posX}px`;
+                heart.style.animationDelay = `${delay}s`;
+                heart.style.animationDuration = `${duration}s`;
+                heart.style.background = color;
+                
+                container.appendChild(heart);
+            }
+        }
+        
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+            createHearts();
+            
+            const truths = [
+                // Romantic Truths (50)
+                "What first attracted you to me?",
+                "What's your favorite memory of us together?",
+                "What's something I do that always makes you smile?",
+                "When did you know you were falling in love with me?",
+                "What's your favorite thing about our relationship?",
+                "What's the most romantic thing you've ever done for someone?",
+                "What's your idea of a perfect date?",
+                "What song reminds you of me and why?",
+                "What's something you'd love to do together that we haven't done yet?",
+                "What's your favorite physical feature of mine?",
+                "What's your favorite non-physical quality about me?",
+                "What's something small I do that you really appreciate?",
+                "If we could go anywhere in the world together, where would you choose?",
+                "What's your favorite thing to do together on a lazy day?",
+                "What's the most thoughtful gift you've ever received?",
+                "What's your favorite nickname I've called you?",
+                "What's something you've learned from our relationship?",
+                "What's your favorite way to spend time with me?",
+                "What's something you want us to experience together in the future?",
+                "What's your favorite thing about our communication?",
+                "What's the most surprising thing about being in a relationship with me?",
+                "What's your favorite tradition we've created together?",
+                "What's something you admire about how I handle challenges?",
+                "What's your favorite thing about our intimacy?",
+                "What's something you'd love to learn or try together?",
+                "What's your favorite meal we've shared together?",
+                "What's something you find endlessly charming about me?",
+                "What's your favorite memory from early in our relationship?",
+                "What's something you'd love to do more often together?",
+                "What's your favorite way I show you affection?",
+                "What's something about our relationship that makes you proud?",
+                "What's your favorite thing about waking up next to me?",
+                "What's something you think we're really good at as a couple?",
+                "What's your favorite little habit of mine?",
+                "What's something you'd love to celebrate together in the future?",
+                "What's your favorite thing about our life together?",
+                "What's something you appreciate about how I support you?",
+                "What's your favorite way to reconnect after a long day?",
+                "What's something you love that we disagree about?",
+                "What's your favorite spontaneous thing we've done together?",
+                "What's something you'd love to teach me?",
+                "What's your favorite thing about our shared values?",
+                "What's something you'd love to build or create together?",
+                "What's your favorite way I make you feel special?",
+                "What's something you'd love to improve about our relationship?",
+                "What's your favorite thing about our future plans?",
+                "What's something you'd love to forgive or let go of together?",
+                "What's your favorite way we've grown together?",
+                "What's something you'd love to promise each other?",
+                "What's your favorite thing about loving me?",
+
+                // Personal Truths (50)
+                "What's your biggest fear in relationships?",
+                "What's something you're secretly proud of?",
+                "What's your most embarrassing childhood memory?",
+                "What's something you've never told anyone about yourself?",
+                "What's your biggest irrational fear?",
+                "What's something you pretend to like but actually hate?",
+                "What's the most childish thing you still do?",
+                "What's your most controversial opinion?",
+                "What's something you're secretly competitive about?",
+                "What's your guiltiest pleasure?",
+                "What's something you're afraid to tell me?",
+                "What's your biggest regret?",
+                "What's something you wish you could change about yourself?",
+                "What's your most embarrassing habit?",
+                "What's something you've lied about to seem more impressive?",
+                "What's your most embarrassing celebrity crush?",
+                "What's something you're secretly terrible at?",
+                "What's your most ridiculous purchase?",
+                "What's something you believed as a child that you now realize was silly?",
+                "What's your most embarrassing middle school memory?",
+                "What's something you pretend to understand but actually don't?",
+                "What's your most embarrassing Google search?",
+                "What's something you're secretly judgmental about?",
+                "What's your most ridiculous fear?",
+                "What's something you've faked to fit in?",
+                "What's your most embarrassing moment in public?",
+                "What's something you're too embarrassed to ask about?",
+                "What's your most ridiculous insecurity?",
+                "What's something you've stolen and never returned?",
+                "What's your most embarrassing drunk story?",
+                "What's something you've pretended to like to impress someone?",
+                "What's your most ridiculous childhood fear?",
+                "What's something you've done that you hope no one finds out about?",
+                "What's your most embarrassing fashion phase?",
+                "What's something you're secretly sensitive about?",
+                "What's your most ridiculous lie you've told?",
+                "What's something you're embarrassed to admit you enjoy?",
+                "What's your most embarrassing childhood photo?",
+                "What's something you've exaggerated to make yourself look better?",
+                "What's your most ridiculous habit?",
+                "What's something you're secretly jealous of?",
+                "What's your most embarrassing text you've sent?",
+                "What's something you've done that you're not proud of?",
+                "What's your most ridiculous childhood belief?",
+                "What's something you're afraid to try?",
+                "What's your most embarrassing moment with a crush?",
+                "What's something you've kept secret from your family?",
+                "What's your most ridiculous purchase you've made while drunk?",
+                "What's something you're embarrassed to still not know how to do?",
+
+                // Flirty Truths (50)
+                "What's your favorite part of my body to look at?",
+                "What's something I do that turns you on without trying?",
+                "What's your favorite memory of us being intimate?",
+                "What's your secret fantasy you've never told me about?",
+                "What's something you'd love to try in bed but haven't told me?",
+                "What's the most unusual place you've thought about having sex?",
+                "What's your favorite thing I do during foreplay?",
+                "What's something you'd love me to wear for you?",
+                "What's your favorite position and why?",
+                "What's something you'd love to do to me that we haven't tried?",
+                "What's the most embarrassing thing that's happened to you during sex?",
+                "What's your favorite type of kiss?",
+                "What's something non-sexual that I do that turns you on?",
+                "What's your favorite thing about our sexual chemistry?",
+                "What's something you'd love me to say during sex?",
+                "What's your favorite place I've ever touched you?",
+                "What's something you'd love to explore sexually but are nervous to try?",
+                "What's your favorite memory of our first time together?",
+                "What's something you'd love to do more often in bed?",
+                "What's your favorite thing about making love to me?",
+                "What's something you'd love to try with restraints or toys?",
+                "What's your favorite way to be touched?",
+                "What's something you'd love to do in front of a mirror together?",
+                "What's your favorite thing about my scent?",
+                "What's something you'd love to do with my hair during sex?",
+                "What's your favorite sound I make during intimacy?",
+                "What's something you'd love to try with food or temperature play?",
+                "What's your favorite thing about my lips?",
+                "What's something you'd love to do with blindfolds or sensory play?",
+                "What's your favorite thing about my hands?",
+                "What's something you'd love to do more of during foreplay?",
+                "What's your favorite thing about my voice during sex?",
+                "What's something you'd love to try with role play?",
+                "What's your favorite thing about my body during sex?",
+                "What's something you'd love to do with massage or sensual touch?",
+                "What's your favorite thing about after sex?",
+                "What's something you'd love to try with power dynamics?",
+                "What's your favorite thing about my eyes during intimacy?",
+                "What's something you'd love to do with dirty talk?",
+                "What's your favorite thing about my confidence in bed?",
+                "What's something you'd love to try with outdoor or public play?",
+                "What's your favorite thing about my reactions during sex?",
+                "What's something you'd love to do with extended teasing?",
+                "What's your favorite thing about my passion?",
+                "What's something you'd love to try with recording or photos?",
+                "What's your favorite thing about my creativity in bed?",
+                "What's something you'd love to do with extended foreplay?",
+                "What's your favorite thing about my spontaneity?",
+                "What's something you'd love to try with new positions?",
+                "What's your favorite thing about our connection during sex?",
+
+                // Deep Truths (50)
+                "What's your biggest insecurity in our relationship?",
+                "What's something you need from me that you're afraid to ask for?",
+                "What's your biggest fear about our future together?",
+                "What's something you wish we could change about our relationship?",
+                "What's the hardest thing you've had to forgive me for?",
+                "What's something you're afraid to tell me about yourself?",
+                "What's your biggest regret in our relationship?",
+                "What's something you need more of from me emotionally?",
+                "What's the most vulnerable you've ever felt with me?",
+                "What's something you're afraid I'll judge you for?",
+                "What's your biggest concern about our compatibility?",
+                "What's something you've been holding back from telling me?",
+                "What's the hardest lesson you've learned in relationships?",
+                "What's something you wish you could take back in our relationship?",
+                "What's your biggest doubt about us?",
+                "What's something you're afraid to admit to yourself about us?",
+                "What's the most painful experience you've had in love?",
+                "What's something you're afraid to ask me about my past?",
+                "What's your biggest worry about growing old together?",
+                "What's something you're afraid I'll never understand about you?",
+                "What's the most scared you've ever been in our relationship?",
+                "What's something you're afraid to try in our relationship?",
+                "What's your biggest fear about commitment?",
+                "What's something you're afraid to tell me about your feelings?",
+                "What's the most insecure you've ever felt with me?",
+                "What's something you're afraid to ask for in bed?",
+                "What's your biggest concern about our communication?",
+                "What's something you're afraid to admit you need?",
+                "What's the most jealous you've ever felt in our relationship?",
+                "What's something you're afraid to confess about your past?",
+                "What's your biggest fear about intimacy?",
+                "What's something you're afraid to tell me about your desires?",
+                "What's the most alone you've ever felt in our relationship?",
+                "What's something you're afraid to ask me to change?",
+                "What's your biggest worry about our future family?",
+                "What's something you're afraid to tell me about your needs?",
+                "What's the most disappointed you've ever been in me?",
+                "What's something you're afraid to admit you're jealous of?",
+                "What's your biggest fear about being vulnerable with me?",
+                "What's something you're afraid to tell me about your fantasies?",
+                "What's the most hurt you've ever been in a relationship?",
+                "What's something you're afraid to ask me about my exes?",
+                "What's your biggest concern about our sex life?",
+                "What's something you're afraid to tell me about your boundaries?",
+                "What's the most rejected you've ever felt with me?",
+                "What's something you're afraid to admit you miss?",
+                "What's your biggest fear about our emotional connection?",
+                "What's something you're afraid to tell me about your expectations?",
+                "What's the most misunderstood you've ever felt by me?",
+                "What's something you're afraid to ask me to try?",
+
+                // Fun Truths (50)
+                "If you could swap lives with anyone for a day, who would it be?",
+                "What's the weirdest dream you've ever had?",
+                "If you could have any superpower, what would it be and why?",
+                "What's your most ridiculous talent?",
+                "If you could eat only one food for the rest of your life, what would it be?",
+                "What's the strangest thing you've ever eaten?",
+                "If you could be any animal, what would you be and why?",
+                "What's your most embarrassing nickname?",
+                "If you could live in any fictional universe, where would you choose?",
+                "What's the weirdest habit you have?",
+                "If you could time travel, where and when would you go?",
+                "What's your most ridiculous fear?",
+                "If you could have dinner with any three people (dead or alive), who would they be?",
+                "What's the strangest thing you've ever done for money?",
+                "If you could instantly master any skill, what would it be?",
+                "What's your most embarrassing childhood crush?",
+                "If you could be famous for one thing, what would it be?",
+                "What's the weirdest thing in your search history?",
+                "If you could only listen to one song for the rest of your life, what would it be?",
+                "What's your most ridiculous purchase?",
+                "If you could have any celebrity as your best friend, who would you choose?",
+                "What's the strangest way you've injured yourself?",
+                "If you could live in any decade, which would you choose?",
+                "What's your most embarrassing autocorrect fail?",
+                "If you could be any fictional character for a day, who would you be?",
+                "What's the weirdest thing you've ever seen in public?",
+                "If you could have an unlimited supply of one thing, what would it be?",
+                "What's your most ridiculous childhood fear?",
+                "If you could invent any holiday, what would it celebrate?",
+                "What's the strangest gift you've ever received?",
+                "If you could only wear one color for the rest of your life, what would it be?",
+                "What's your most embarrassing karaoke song?",
+                "If you could have any animal as a pet (real or mythical), what would you choose?",
+                "What's the weirdest food combination you enjoy?",
+                "If you could be any age for the rest of your life, what age would you choose?",
+                "What's your most ridiculous claim to fame?",
+                "If you could only use one social media platform, which would it be?",
+                "What's the strangest law you've heard of?",
+                "If you could have any job in the world, what would it be?",
+                "What's your most embarrassing childhood photo?",
+                "If you could live anywhere in the world, where would it be?",
+                "What's the weirdest rumor you've heard about yourself?",
+                "If you could have any car, what would it be?",
+                "What's your most ridiculous childhood dream job?",
+                "If you could only watch one movie for the rest of your life, what would it be?",
+                "What's the strangest dream you've had about me?",
+                "If you could have any historical figure as your mentor, who would you choose?",
+                "What's your most embarrassing childhood fashion choice?",
+                "If you could solve one world problem, what would it be?",
+                "What's the weirdest thing you've ever collected?",
+
+                // Childhood Truths (50)
+                "What's your favorite childhood memory?",
+                "What's the worst trouble you got into as a kid?",
+                "What was your favorite toy growing up?",
+                "What's the most embarrassing thing your parents caught you doing?",
+                "What was your favorite childhood game?",
+                "What's the dumbest thing you believed as a child?",
+                "What was your worst childhood injury?",
+                "What's the most embarrassing phase you went through?",
+                "What was your favorite childhood TV show?",
+                "What's the worst gift you ever received as a kid?",
+                "What was your childhood nickname?",
+                "What's the most trouble you got into at school?",
+                "What was your favorite childhood meal?",
+                "What's the most embarrassing thing you wore to school?",
+                "What was your biggest childhood fear?",
+                "What's the worst punishment you received as a kid?",
+                "What was your first crush like?",
+                "What's the most embarrassing thing you did to impress someone?",
+                "What was your favorite childhood book?",
+                "What's the dumbest thing you did for attention as a kid?",
+                "What was your childhood dream job?",
+                "What's the most embarrassing school photo you have?",
+                "What was your favorite childhood holiday tradition?",
+                "What's the worst lie you told as a child?",
+                "What was your most embarrassing childhood habit?",
+                "What's the strangest thing you collected as a kid?",
+                "What was your favorite childhood candy?",
+                "What's the most embarrassing thing you believed about the opposite sex?",
+                "What was your worst childhood haircut?",
+                "What's the silliest fight you had with siblings or friends?",
+                "What was your most cringe-worthy childhood phase?",
+                "What's the most embarrassing thing your parents told people about you?",
+                "What was your favorite childhood vacation?",
+                "What's the worst present you ever gave someone as a kid?",
+                "What was your most ridiculous childhood fear?",
+                "What's the most embarrassing thing you did to fit in?",
+                "What was your favorite childhood board game?",
+                "What's the dumbest reason you got in trouble at school?",
+                "What was your most embarrassing childhood crush?",
+                "What's the worst fashion trend you followed as a kid?",
+                "What was your favorite childhood cartoon?",
+                "What's the most embarrassing thing you wrote in a childhood diary?",
+                "What was your worst childhood birthday party?",
+                "What's the silliest thing you cried about as a child?",
+                "What was your favorite childhood sport or activity?",
+                "What's the most embarrassing thing you did to get a crush's attention?",
+                "What was your worst childhood punishment?",
+                "What's the dumbest thing you got proud of as a kid?",
+                "What was your most embarrassing childhood talent show performance?",
+                "What's the worst school project you ever turned in?",
+
+                // Relationship History Truths (50)
+                "What's your worst breakup story?",
+                "What's something you learned from your past relationships?",
+                "What's your most embarrassing dating story?",
+                "What's the worst date you've ever been on?",
+                "What's your biggest relationship regret?",
+                "What's something you'd never do again in a relationship?",
+                "What's your cringiest romantic gesture?",
+                "What's the most immature thing you've done in a relationship?",
+                "What's your most embarrassing crush story?",
+                "What's the worst romantic gift you've ever received?",
+                "What's your biggest dating pet peeve?",
+                "What's something you tolerated in past relationships that you wouldn't now?",
+                "What's your most ridiculous breakup reason?",
+                "What's the worst romantic advice you've ever received?",
+                "What's your most embarrassing first kiss story?",
+                "What's the worst habit you've had in past relationships?",
+                "What's your biggest turn-off in a partner?",
+                "What's something you've done in past relationships that you're not proud of?",
+                "What's your most ridiculous dating standard?",
+                "What's the worst romantic movie you've ever seen?",
+                "What's your most embarrassing love letter or text?",
+                "What's the worst relationship advice you've ever given?",
+                "What's your biggest dating fear?",
+                "What's something you've faked in past relationships?",
+                "What's your most cringe-worthy romantic moment?",
+                "What's the worst pickup line you've ever used or received?",
+                "What's your biggest relationship mistake?",
+                "What's something you've lied about in past relationships?",
+                "What's your most embarrassing Valentine's Day story?",
+                "What's the worst romantic gift you've ever given?",
+                "What's your biggest dating insecurity?",
+                "What's something you've done to make an ex jealous?",
+                "What's your most ridiculous relationship rule?",
+                "What's the worst date idea you've ever had?",
+                "What's your most embarrassing online dating story?",
+                "What's the worst romantic song you secretly love?",
+                "What's your biggest dating red flag?",
+                "What's something you've forgiven in past relationships that you wouldn't now?",
+                "What's your most cringe-worthy dating profile?",
+                "What's the worst relationship phase you've gone through?",
+                "What's your most embarrassing rejection story?",
+                "What's the worst romantic gesture you've witnessed?",
+                "What's your biggest dating deal-breaker?",
+                "What's something you've stolen from an ex?",
+                "What's your most ridiculous breakup method?",
+                "What's the worst couple's costume you've seen?",
+                "What's your most embarrassing dating app match?",
+                "What's the worst relationship trend you've observed?",
+                "What's your biggest dating pet peeve?",
+                "What's something you've done to test a partner's loyalty?",
+                "What's your most ridiculous relationship fear?",
+
+                // Fantasy Truths (50)
+                "If you could have a romantic getaway anywhere, where would it be?",
+                "What's your perfect date night idea?",
+                "If you could live in any era with me, when would you choose?",
+                "What's your dream proposal scenario?",
+                "If you could have any celebrity join us for dinner, who would it be?",
+                "What's your fantasy vacation with me?",
+                "If you could swap bodies with me for a day, what would you do?",
+                "What's your dream house with me like?",
+                "If you could have any superpower to improve our relationship, what would it be?",
+                "What's your perfect lazy Sunday with me?",
+                "If you could relive any moment with me, what would it be?",
+                "What's your dream anniversary celebration?",
+                "If you could write our love story, how would it go?",
+                "What's your perfect kiss location?",
+                "If you could create the perfect romantic playlist, what songs would be on it?",
+                "What's your dream wedding detail?",
+                "If you could have any fictional character as our relationship coach, who would it be?",
+                "What's your perfect morning together?",
+                "If you could design the perfect date night, what would it include?",
+                "What's your dream couple's costume?",
+                "If you could have any view from our bedroom, what would it be?",
+                "What's your perfect rainy day together?",
+                "If you could take me anywhere right now, where would we go?",
+                "What's your dream romantic gesture to receive?",
+                "If you could have any animal as our pet, what would you choose?",
+                "What's your perfect summer day together?",
+                "If you could create the ultimate romantic movie about us, who would star in it?",
+                "What's your dream kitchen to cook together in?",
+                "If you could have any musician perform at our wedding, who would it be?",
+                "What's your perfect winter day together?",
+                "If you could have any car to road trip together in, what would it be?",
+                "What's your dream garden to relax in together?",
+                "If you could have any historical couple mentor us, who would you choose?",
+                "What's your perfect autumn day together?",
+                "If you could have any artist paint our portrait, who would it be?",
+                "What's your dream bedroom to wake up in together?",
+                "If you could have any chef cook us a romantic dinner, who would it be?",
+                "What's your perfect spring day together?",
+                "If you could have any writer compose our love letters, who would it be?",
+                "What's your dream bathroom to relax in together?",
+                "If you could have any dancer choreograph our first dance, who would it be?",
+                "What's your perfect night under the stars?",
+                "If you could have any architect design our dream home, who would it be?",
+                "What's your dream library to read together in?",
+                "If you could have any poet write about our love, who would it be?",
+                "What's your perfect beach day together?",
+                "If you could have any photographer capture our love, who would it be?",
+                "What's your dream backyard to spend time in?",
+                "If you could have any singer perform our song, who would it be?",
+                "What's your perfect mountain getaway?",
+
+                // Future Truths (50)
+                "Where do you see us in 5 years?",
+                "What's something you're excited to experience together?",
+                "What's your dream for our future family?",
+                "What's something you want to achieve together?",
+                "Where would you love to travel with me?",
+                "What's a tradition you'd love to start together?",
+                "What's your vision for our dream home?",
+                "What's something you'd love to learn together?",
+                "How would you like our relationship to grow?",
+                "What's a challenge you'd like to face together?",
+                "What's your dream vacation with me?",
+                "What's something you'd love to create together?",
+                "What's your hope for our future intimacy?",
+                "What's a skill you'd love to develop together?",
+                "How would you like to celebrate our future anniversaries?",
+                "What's something you'd love to build together?",
+                "What's your dream for our future adventures?",
+                "What's a cause you'd love to support together?",
+                "How would you like our communication to evolve?",
+                "What's something you'd love to collect together?",
+                "What's your vision for our future holidays?",
+                "What's a project you'd love to work on together?",
+                "What's your dream for our future date nights?",
+                "What's a language you'd love to learn together?",
+                "How would you like to handle future challenges?",
+                "What's something you'd love to grow together?",
+                "What's your hope for our future romance?",
+                "What's a hobby you'd love to share?",
+                "How would you like to spend our retirement?",
+                "What's something you'd love to discover together?",
+                "What's your dream for our future celebrations?",
+                "What's a sport you'd love to try together?",
+                "What's your vision for our future holidays?",
+                "What's a business you'd love to start together?",
+                "How would you like to give back together?",
+                "What's something you'd love to teach our future kids?",
+                "What's your dream for our future home?",
+                "What's a ritual you'd love to establish?",
+                "How would you like to stay connected as we age?",
+                "What's something you'd love to explore together?",
+                "What's your hope for our future friendship?",
+                "What's a place you'd love to live together?",
+                "How would you like to celebrate our future successes?",
+                "What's something you'd love to change together?",
+                "What's your dream for our future health?",
+                "What's a memory you'd love to create?",
+                "How would you like to handle future disagreements?",
+                "What's something you'd love to improve together?",
+                "What's your vision for our future happiness?"
+            ];
+            
+            const dares = [
+                // Romantic Dares (50)
+                "Kiss me passionately for 30 seconds",
+                "Whisper your favorite thing about me in my ear",
+                "Slow dance with me for an entire song",
+                "Write me a short love note right now",
+                "Give me a 2-minute massage",
+                "Look into my eyes without speaking for 1 minute",
+                "Recite a poem or song lyrics that remind you of me",
+                "Feed me something sweet",
+                "Describe your perfect day with me in detail",
+                "Hold my hand and tell me what you love about our connection",
+                "Brush my hair or rub my shoulders for 2 minutes",
+                "Tell me about a time I made you feel special",
+                "Kiss me somewhere unexpected",
+                "Draw a quick picture of us together",
+                "Plan our dream vacation out loud",
+                "Slowly trace your finger along my arm or face",
+                "Tell me what you'd do on our perfect date night",
+                "Let me rest my head in your lap while you stroke my hair",
+                "Describe your favorite memory of us in detail",
+                "Kiss each of my fingertips",
+                "Tell me what you think our future looks like",
+                "Let me whisper something in your ear that you have to agree to",
+                "Describe what you find most attractive about me",
+                "Give me a compliment for every year I've been alive",
+                "Let me choose your outfit for our next date",
+                "Tell me what song reminds you of us and why",
+                "Kiss me like you did when we first started dating",
+                "Promise me something you'll do for me this week",
+                "Describe your favorite feature of mine in detail",
+                "Let me do your hair or makeup however I want",
+                "Tell me about a time you felt proud to be with me",
+                "Kiss me in a way you've never kissed me before",
+                "Write down three things you love about me",
+                "Let me take a photo of you in a pose of my choice",
+                "Describe your perfect kiss with me",
+                "Give me a piggyback ride around the room",
+                "Tell me what you'd do if we had a whole day alone together",
+                "Let me feed you something with my hands",
+                "Describe what you think our wedding would be like",
+                "Kiss me in three different ways back to back",
+                "Tell me what you'd pack for our romantic getaway",
+                "Let me hold you close for an entire song",
+                "Describe your favorite thing about our intimacy",
+                "Give me a kiss for every month we've been together",
+                "Tell me what you think our first date said about us",
+                "Let me choose a new nickname for you",
+                "Describe what you think makes us a good match",
+                "Kiss me somewhere you've never kissed me before",
+                "Tell me what you'd do if we were stranded alone together",
+
+                // Flirty Dares (50)
+                "Send me a flirty text right now",
+                "Give me a sensual kiss on the neck",
+                "Let me unbutton one piece of your clothing",
+                "Whisper your fantasy in my ear",
+                "Let me tie your hands with something for 2 minutes",
+                "Describe what you'd do if we were alone in a elevator",
+                "Kiss me like we're in a romantic movie",
+                "Let me blindfold you for 1 minute",
+                "Tell me what you'd do if we had a weekend alone",
+                "Give me a lap dance for 30 seconds",
+                "Let me choose your underwear for tomorrow",
+                "Whisper where you'd like me to kiss you",
+                "Describe your perfect romantic evening with me",
+                "Let me undo your belt or unzip your dress",
+                "Tell me what you'd wear to seduce me",
+                "Give me a kiss that leaves me wanting more",
+                "Let me whisper my fantasy in your ear",
+                "Describe what turns you on about me",
+                "Kiss me somewhere unexpected",
+                "Let me take a sexy photo of you (you can delete after)",
+                "Tell me what you'd do if we were in a hot tub",
+                "Give me a 30 second striptease",
+                "Let me nibble your ear for 15 seconds",
+                "Describe your perfect morning with me",
+                "Kiss me like it's our last kiss ever",
+                "Let me run my fingers through your hair for 1 minute",
+                "Tell me what you'd do if we were alone on a beach",
+                "Give me a massage through your clothes",
+                "Let me kiss your hand like a romantic hero",
+                "Describe what you'd wear on our honeymoon",
+                "Kiss me in slow motion",
+                "Let me undo one button or zipper on your clothes",
+                "Tell me what you find sexiest about me",
+                "Give me a kiss that starts soft and gets passionate",
+                "Let me whisper where I'd like to kiss you",
+                "Describe your perfect romantic getaway with me",
+                "Kiss me like you're trying to convince me of something",
+                "Let me sit in your lap for 30 seconds",
+                "Tell me what you'd do if we were stuck in a cabin",
+                "Give me a kiss that leaves me breathless",
+                "Let me trace my finger along your collarbone",
+                "Describe what you'd do if we had 24 hours alone",
+                "Kiss me like we're saying goodbye at an airport",
+                "Let me choose what you wear to bed tonight",
+                "Tell me what you think about when you can't sleep",
+                "Give me a kiss that starts at my forehead and ends at my lips",
+                "Let me whisper what I'd do if we were alone right now",
+                "Describe your perfect intimate evening with me",
+                "Kiss me like you're trying to remember how I taste",
+                "Let me undo your top button or loosen your collar",
+
+                // Fun Dares (50)
+                "Do your best impression of me",
+                "Sing a romantic song badly",
+                "Dance like no one's watching for 1 minute",
+                "Let me draw on your face with makeup",
+                "Do an interpretive dance of our relationship",
+                "Speak in a silly accent for the next 5 minutes",
+                "Let me style your hair however I want",
+                "Act out our first date in exaggerated fashion",
+                "Do your best sexy walk across the room",
+                "Let me paint your nails however I choose",
+                "Recite the alphabet backwards as fast as you can",
+                "Do 10 pushups with me sitting on your back",
+                "Let me teach you a silly dance move",
+                "Attempt to lick your elbow (it's impossible!)",
+                "Do your best impression of a celebrity",
+                "Let me take a funny photo of you",
+                "Try to touch your nose with your tongue",
+                "Do a handstand against the wall for 10 seconds",
+                "Let me give you a ridiculous nickname for the day",
+                "Try to say a tongue twister 5 times fast",
+                "Do your best robot dance",
+                "Let me dress you up in silly accessories",
+                "Attempt to moonwalk across the room",
+                "Do an impression of your favorite cartoon character",
+                "Let me write something funny on your arm",
+                "Try to balance a spoon on your nose",
+                "Do your best impression of a celebrity couple",
+                "Let me put stickers all over your face",
+                "Attempt to do the splits (safely!)",
+                "Do a dramatic reading of a children's book",
+                "Let me style you in the ugliest outfit possible",
+                "Try to juggle three objects (or pretend to)",
+                "Do your best impression of a movie scene",
+                "Let me teach you a phrase in another language",
+                "Attempt to breakdance for 15 seconds",
+                "Do a silly walk around the room",
+                "Let me put temporary tattoos on you",
+                "Try to rap a nursery rhyme",
+                "Do your best impression of a famous kiss",
+                "Let me create a silly hairstyle for you",
+                "Attempt to do a magic trick (real or fake)",
+                "Do a dramatic monologue about our relationship",
+                "Let me paint a silly picture on your arm",
+                "Try to name 10 countries in 15 seconds",
+                "Do your best impression of a romantic hero",
+                "Let me dress you up in my clothes",
+                "Attempt to do a cartwheel (safely!)",
+                "Do a dramatic reading of a food menu",
+                "Let me give you a ridiculous makeover",
+                "Try to name all the US states in 30 seconds",
+
+                // Public Dares (50)
+                "Hold my hand in public for 10 minutes",
+                "Whisper something sweet to me in a crowded place",
+                "Let me feed you in public",
+                "Dance with me in an unexpected place",
+                "Give me a quick kiss in a public place",
+                "Tell a stranger something nice about me",
+                "Let me choose your outfit for going out",
+                "Sing part of a love song to me in public",
+                "Hold my waist while we walk for 5 minutes",
+                "Tell a cashier we're on our honeymoon",
+                "Let me kiss your cheek in a crowded place",
+                "Describe our relationship to a stranger in 3 words",
+                "Feed me something in public",
+                "Ask a stranger to take a romantic photo of us",
+                "Let me hold your hand in my pocket if it's cold",
+                "Tell a server it's our anniversary (even if it's not)",
+                "Kiss my hand in a fancy restaurant",
+                "Let me whisper in your ear in a public place",
+                "Describe me to a stranger without using physical traits",
+                "Slow dance with me in a store aisle",
+                "Let me put my arm around you for 10 minutes in public",
+                "Tell a stranger how we met (real or made up version)",
+                "Feed each other dessert in public",
+                "Ask a stranger to recommend something romantic we should do",
+                "Let me fix your hair or clothes in public",
+                "Tell a server your favorite thing about me",
+                "Kiss me under mistletoe (real or pretend)",
+                "Let me choose your drink at a cafe",
+                "Describe our first date to a stranger",
+                "Hold my gaze for 15 seconds in a crowded place",
+                "Tell a passerby it's our first date",
+                "Let me button or fix your clothes in public",
+                "Ask a stranger to name our 'couple name'",
+                "Share a dessert with me in public with only one fork",
+                "Let me tuck your hair behind your ear in public",
+                "Tell a store clerk we're newlyweds",
+                "Kiss me quickly before getting out of a car",
+                "Let me hold your hand under the table at a restaurant",
+                "Describe what you'd do on our dream date to a stranger",
+                "Put your arm around me while waiting in line",
+                "Tell a stranger your favorite thing about our relationship",
+                "Let me kiss your forehead in public",
+                "Ask someone to take a photo of us kissing",
+                "Share a secret with me in a crowded place by whispering",
+                "Let me choose your meal at a restaurant",
+                "Tell a passerby we just got engaged",
+                "Kiss me in front of a famous landmark (real or pretend)",
+                "Let me fix your collar or jewelry in public",
+                "Ask a stranger where we should go on our next date",
+                "Slowly walk arm-in-arm down the street",
+                "Tell a server it's our first date anniversary",
+
+                // Food Dares (50)
+                "Feed me something without using your hands",
+                "Let me feed you with my eyes closed",
+                "Eat something spicy and don't react",
+                "Let me choose what you eat for your next bite",
+                "Try to eat something messy elegantly",
+                "Feed each other at the same time",
+                "Let me blindfold you and feed you something",
+                "Eat something you dislike with a smile",
+                "Try to eat without using your hands",
+                "Let me create a weird food combination for you to try",
+                "Feed me something while maintaining eye contact",
+                "Try to identify a food while blindfolded",
+                "Let me choose your next three bites",
+                "Eat something very slowly and sensually",
+                "Try to eat something upside down",
+                "Let me feed you something while you keep your eyes closed",
+                "Eat something normally but describe it like it's gourmet",
+                "Try to eat with the 'wrong' hand",
+                "Let me create a romantic food arrangement for you",
+                "Feed each other without speaking",
+                "Try to eat something without letting it touch your lips",
+                "Let me choose how you eat your next bite (no hands, etc)",
+                "Eat something while staring into my eyes",
+                "Try to identify ingredients in a dish blindfolded",
+                "Let me feed you something you've never tried",
+                "Eat something hot and cold at the same time",
+                "Try to eat with your non-dominant hand",
+                "Let me create a love message with your food",
+                "Feed each other with just your mouths",
+                "Try to eat something without chewing",
+                "Let me arrange your plate artistically",
+                "Eat something while describing it poetically",
+                "Try to balance food on your nose",
+                "Let me choose your next drink without telling you what it is",
+                "Feed me something while telling me why you love me",
+                "Try to eat with your eyes closed",
+                "Let me create a funny face with your food",
+                "Eat something while humming a love song",
+                "Try to identify a food just by smell",
+                "Let me feed you like you're a baby",
+                "Eat something while maintaining a serious face",
+                "Try to eat something from far away (no hands)",
+                "Let me create a romantic scene with our food",
+                "Feed each other with chopsticks if you don't normally",
+                "Try to eat something without using your teeth",
+                "Let me mix your drinks together",
+                "Eat something while pretending it's something else",
+                "Try to guess what you're eating while blindfolded",
+                "Let me create a heart shape with your food",
+                "Feed me something while telling me a secret",
+
+                // Adventure Dares (50)
+                "Plan our dream vacation together out loud",
+                "Research and tell me about a place we should visit",
+                "Describe your perfect adventure with me",
+                "Look up flights to a random place and pretend we're going",
+                "Tell me about a place you've always wanted to take me",
+                "Plan what we'd do if we won a trip anywhere",
+                "Describe your ideal road trip with me",
+                "Look up and describe the most romantic hotel you can find",
+                "Tell me about a festival or event we should attend",
+                "Plan our perfect weekend getaway",
+                "Describe what you'd pack for our dream vacation",
+                "Research and tell me about a unique Airbnb we could stay in",
+                "Tell me about a hike or outdoor adventure we should do",
+                "Plan our ideal day in a city we've never visited",
+                "Describe your perfect beach vacation with me",
+                "Look up and tell me about a romantic restaurant abroad",
+                "Tell me about a museum or attraction we should see",
+                "Plan what we'd do with 24 hours in Paris (or another city)",
+                "Describe your ideal camping trip with me",
+                "Research and tell me about a unique mode of transportation",
+                "Tell me about a cultural experience we should have",
+                "Plan our perfect day at a ski resort",
+                "Describe your dream cruise or boat trip with me",
+                "Look up and tell me about a famous landmark we should visit",
+                "Tell me about a food tour we should go on",
+                "Plan our ideal wine tasting adventure",
+                "Describe your perfect train journey with me",
+                "Research and tell me about a unique festival we could attend",
+                "Tell me about a wildlife experience we should have",
+                "Plan our perfect day at an amusement park",
+                "Describe your ideal hot air balloon ride with me",
+                "Look up and tell me about a famous hiking trail",
+                "Tell me about a photography adventure we should go on",
+                "Plan our perfect day at a music festival",
+                "Describe your dream safari with me",
+                "Research and tell me about a unique spa experience",
+                "Tell me about a historical site we should visit",
+                "Plan our ideal day at a water park",
+                "Describe your perfect island hopping adventure",
+                "Look up and tell me about a famous food market",
+                "Tell me about a volunteer trip we could do together",
+                "Plan our perfect day at a national park",
+                "Describe your ideal stargazing adventure",
+                "Research and tell me about a unique Airbnb experience",
+                "Tell me about a sports event we should attend",
+                "Plan our perfect day at a famous city's downtown",
+                "Describe your dream cross-country road trip",
+                "Look up and tell me about a famous bridge we should visit",
+                "Tell me about a cooking class we should take abroad",
+                "Plan our perfect day at a famous beach",
+
+                // Creative Dares (50)
+                "Draw a quick portrait of me",
+                "Write a haiku about our relationship",
+                "Create a silly slogan for us as a couple",
+                "Make up a story about how we met (fantasy version)",
+                "Design our dream house on a piece of paper",
+                "Write lyrics for our couple's theme song",
+                "Create a new handshake for us to use",
+                "Make up a secret code we can use to communicate",
+                "Draw what you think our future kids might look like",
+                "Write a short romantic story featuring us",
+                "Create a motto for our relationship",
+                "Design a tattoo you'd get for me (real or pretend)",
+                "Make up a signature cocktail for us",
+                "Write a jingle about our love",
+                "Create a fantasy vacation itinerary for us",
+                "Draw our future dream car",
+                "Make up a legend about how we fell in love",
+                "Design the cover for our imaginary romance novel",
+                "Write a six-word love story about us",
+                "Create a secret language for just us two",
+                "Draw what you think our wedding cake would look like",
+                "Make up a superhero couple based on us",
+                "Design a time capsule for our relationship",
+                "Write a romantic movie title about us",
+                "Create a new holiday celebrating our love",
+                "Draw your favorite memory of us together",
+                "Make up a constellation based on our relationship",
+                "Design a board game about our love story",
+                "Write a text you'd send to brag about me",
+                "Create a fantasy menu for our dream date",
+                "Draw what you think our perfect pet would look like",
+                "Make up a news headline about our relationship",
+                "Design a cocktail based on my personality",
+                "Write a fortune cookie message for our future",
+                "Create a fantasy adventure we could go on",
+                "Draw a map of all the places we've been together",
+                "Make up a legend about how we met",
+                "Design a postage stamp featuring us",
+                "Write a text you'd send to make me smile",
+                "Create a fantasy band based on our relationship",
+                "Draw what you think our dream bedroom would look like",
+                "Make up a secret mission for us to complete",
+                "Design a Valentine's card just for us",
+                "Write a text you'd send to surprise me",
+                "Create a fantasy world where our love is legendary",
+                "Draw what you think our future house would look like",
+                "Make up a secret society for couples like us",
+                "Design a logo for our relationship",
+                "Write a text you'd send to make me laugh",
+                "Create a fantasy creature based on our love",
+
+                // Challenge Dares (50)
+                "Keep a straight face while I try to make you laugh for 1 minute",
+                "Let me tickle you for 30 seconds without moving",
+                "Try not to blink for as long as possible",
+                "Let me try to make you smile without touching you",
+                "Try to stay completely still for 1 minute",
+                "Let me balance objects on your head",
+                "Try not to react as I describe something funny",
+                "Let me try to make you laugh with just facial expressions",
+                "Try to say the alphabet backwards",
+                "Let me lead you blindfolded around the room",
+                "Try to recite a poem while I distract you",
+                "Let me test your reflexes with a falling object",
+                "Try to do 10 pushups with me sitting on your back",
+                "Let me time how long you can hold your breath",
+                "Try to remember what I was wearing yesterday",
+                "Let me quiz you about details of our first date",
+                "Try to name all 50 states in 1 minute",
+                "Let me test your balance with simple exercises",
+                "Try to stand on one leg for 1 minute",
+                "Let me see how many times you can jump in 30 seconds",
+                "Try to remember what we did last weekend in detail",
+                "Let me see how many words you can make from 'relationship'",
+                "Try to say a tongue twister 5 times fast",
+                "Let me time how long you can hold a handstand",
+                "Try to name all your exes in 30 seconds",
+                "Let me test how long you can stare without blinking",
+                "Try to remember my phone number",
+                "Let me see how many coins you can stack",
+                "Try to do a silly walk across the room",
+                "Let me test your memory with random facts about us",
+                "Try to name 10 countries in 15 seconds",
+                "Let me see how long you can keep a coin on your elbow",
+                "Try to remember what you ate for breakfast yesterday",
+                "Let me test how many times you can spin before getting dizzy",
+                "Try to name all your teachers from school",
+                "Let me see how many marshmallows you can fit in your mouth",
+                "Try to remember my middle name",
+                "Let me test how long you can keep a straight face",
+                "Try to name all your childhood pets",
+                "Let me see how many times you can clap in 15 seconds",
+                "Try to remember my favorite color",
+                "Let me test how many books you can balance on your head",
+                "Try to name all the US presidents you can remember",
+                "Let me see how long you can keep a balloon in the air",
+                "Try to remember my birthday (month, day, year)",
+                "Let me test how many times you can snap in 30 seconds",
+                "Try to name all your childhood friends",
+                "Let me see how long you can stand on your tiptoes",
+                "Try to remember what we did on our last anniversary",
+                "Let me test how many jumping jacks you can do in 1 minute",
+
+                // Sensual Dares (50)
+                "Give me a 2-minute scalp massage",
+                "Let me brush your hair for 2 minutes",
+                "Trace your finger slowly along my arm",
+                "Give me a 1-minute foot rub",
+                "Let me massage your hands for 1 minute",
+                "Whisper something sensual in my ear",
+                "Give me a 30-second back scratch",
+                "Let me play with your hair for 1 minute",
+                "Kiss my hand like a romantic hero",
+                "Give me a 1-minute shoulder rub",
+                "Let me trace patterns on your back",
+                "Whisper where you'd like to kiss me",
+                "Give me a 30-second neck massage",
+                "Let me hold your hand and stroke it gently",
+                "Kiss my forehead softly",
+                "Give me a 1-minute hand massage",
+                "Let me caress your face for 30 seconds",
+                "Whisper what you find most attractive about me",
+                "Give me a 30-second temple massage",
+                "Let me unbutton your top button slowly",
+                "Kiss my cheek and whisper something sweet",
+                "Give me a 1-minute arm massage",
+                "Let me play with your jewelry or watch",
+                "Whisper your favorite memory of us touching",
+                "Give me a 30-second ear massage",
+                "Let me adjust your collar or necklace",
+                "Kiss my neck softly for 15 seconds",
+                "Give me a 1-minute leg massage",
+                "Let me fix your hair behind your ear",
+                "Whisper where you'd like me to touch you",
+                "Give me a 30-second wrist massage",
+                "Let me roll up your sleeves slowly",
+                "Kiss my shoulder softly",
+                "Give me a 1-minute finger massage",
+                "Let me straighten your clothes gently",
+                "Whisper how you like to be touched",
+                "Give me a 30-second eyebrow massage",
+                "Let me adjust your tie or scarf",
+                "Kiss my hand and hold it to your cheek",
+                "Give me a 1-minute calf massage",
+                "Let me hold your face gently for 15 seconds",
+                "Whisper what touch you're craving right now",
+                "Give me a 30-second lip massage with your thumb",
+                "Let me fix your bracelet or watch",
+                "Kiss my fingers one by one",
+                "Give me a 1-minute temple massage",
+                "Let me adjust your glasses gently",
+                "Whisper how you'd like to be kissed right now",
+                "Give me a 30-second nose massage (yes, it's a thing!)"
+            ];
+            
+            let customDares = [];
+            let currentPrompt = "";
+            let currentType = "";
+            const card = document.getElementById('card');
+            const promptText = document.getElementById('prompt-text');
+            const categoryBadge = document.getElementById('category-badge');
+            const skipBtn = document.getElementById('skip-btn');
+            const customBtn = document.getElementById('custom-btn');
+            const customModal = document.getElementById('custom-modal');
+            const cancelCustom = document.getElementById('cancel-custom');
+            const saveCustom = document.getElementById('save-custom');
+            const customDareInput = document.getElementById('custom-dare-input');
+            
+            // Initialize buttons
+            document.getElementById('truth-btn').addEventListener('click', () => showPrompt('truth'));
+            document.getElementById('dare-btn').addEventListener('click', () => showPrompt('dare'));
+            skipBtn.addEventListener('click', showNewPrompt);
+            customBtn.addEventListener('click', showCustomModal);
+            cancelCustom.addEventListener('click', hideCustomModal);
+            saveCustom.addEventListener('click', saveCustomDare);
+            
+            function showPrompt(type) {
+                let prompt;
+                let category;
+                
+                if (type === 'truth') {
+                    prompt = truths[Math.floor(Math.random() * truths.length)];
+                    category = 'TRUTH';
+                } else {
+                    // Combine regular dares with custom dares
+                    const allDares = [...dares, ...customDares];
+                    prompt = allDares[Math.floor(Math.random() * allDares.length)];
+                    category = 'DARE';
+                }
+                
+                currentPrompt = prompt;
+                currentType = type;
+                
+                promptText.textContent = prompt;
+                
+                // Style the category badge
+                categoryBadge.textContent = category;
+                if (type === 'truth') {
+                    categoryBadge.className = 'absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800';
+                } else {
+                    categoryBadge.className = 'absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800';
+                }
+                
+                // Flip the card
+                card.classList.add('flipped');
+                
+                // Pulse animation for first prompt
+                if (!skipBtn.classList.contains('pulse')) {
+                    skipBtn.classList.add('pulse');
+                    setTimeout(() => skipBtn.classList.remove('pulse'), 2000);
+                }
+            }
+            
+            function showNewPrompt() {
+                if (!currentType) return;
+                
+                // Flip card back first
+                card.classList.remove('flipped');
+                
+                // Wait for flip animation to complete before showing new prompt
+                setTimeout(() => {
+                    showPrompt(currentType);
+                }, 500);
+            }
+            
+            function showCustomModal() {
+                customModal.classList.remove('hidden');
+                customDareInput.focus();
+            }
+            
+            function hideCustomModal() {
+                customModal.classList.add('hidden');
+                customDareInput.value = '';
+            }
+            
+            function saveCustomDare() {
+                const dare = customDareInput.value.trim();
+                if (dare) {
+                    customDares.push(dare);
+                    hideCustomModal();
+                    
+                    // Show success message
+                    const originalText = saveCustom.textContent;
+                    saveCustom.textContent = 'Saved!';
+                    saveCustom.classList.remove('bg-pink-500');
+                    saveCustom.classList.add('bg-green-500');
+                    
+                    setTimeout(() => {
+                        saveCustom.textContent = originalText;
+                        saveCustom.classList.remove('bg-green-500');
+                        saveCustom.classList.add('bg-pink-500');
+                    }, 2000);
+                    
+                    // If currently showing dares, offer to show the new one
+                    if (currentType === 'dare') {
+                        if (confirm("Would you like to see your custom dare now?")) {
+                            currentPrompt = dare;
+                            promptText.textContent = dare;
+                            categoryBadge.textContent = 'DARE';
+                            categoryBadge.className = 'absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800';
+                            
+                            if (!card.classList.contains('flipped')) {
+                                card.classList.add('flipped');
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Close modal when clicking outside
+            customModal.addEventListener('click', function(e) {
+                if (e.target === customModal) {
+                    hideCustomModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
